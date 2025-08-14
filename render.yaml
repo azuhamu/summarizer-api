@@ -5,7 +5,7 @@ services:
     plan: free
     buildCommand: |
       rm -rf /opt/render/project/.cargo
-      pip install --upgrade pip
+      pip install --upgrade pip setuptools wheel
       pip install --prefer-binary -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers=2 --threads=4
     envVars:
