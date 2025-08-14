@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-summarizer = None  # lazy-loadで初回リクエスト時ロード
+summarizer = None  # モデルは初回アクセス時にのみロード
 
 @app.route("/summarize", methods=["POST"])
 def summarize():
@@ -13,7 +13,7 @@ def summarize():
         summarizer = pipeline(
             "summarization",
             model="facebook/bart-large-cnn",
-            device=-1  # CPU使用
+            device=-1  # CPU利用
         )
 
     data = request.get_json()
