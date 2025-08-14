@@ -9,8 +9,9 @@ services:
     healthCheckPath: /healthz
 
     buildCommand: |
+      rm -rf /opt/render/project/.cargo
       pip install --upgrade pip
-      pip install -r requirements.txt
+      pip install --prefer-binary -r requirements.txt
 
     startCommand: >
       gunicorn app:app
