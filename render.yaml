@@ -1,43 +1,13 @@
 services:
   - type: web
-    name: summarizer-api
+    name: summarization-api
     env: python
     plan: free
-    region: singapore
-    branch: main
-    autoDeploy: true
-    healthCheckPath: /healthz
-
     buildCommand: |
       rm -rf /opt/render/project/.cargo
       pip install --upgrade pip
       pip install --prefer-binary -r requirements.txt
-
-    startCommand: >
-      gunicorn app:app
-      --bind 0.0.0.0:$PORT
-      --workers=1
-      --threads=2
-      --timeout=120
-      --graceful-timeout=30
-      --log-level=info
-
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers=2 --threads=4
     envVars:
-      - key: MODEL_ID
-        value: t5-small
-      - key: MAX_INPUT_CHARS
-        value: "1000"
-      - key: MAX_SUMMARY_CHARS
-        value: "140"
-      - key: TOKENIZERS_PARALLELISM
-        value: "false"
-      - key: OMP_NUM_THREADS
-        value: "1"
-      - key: MKL_NUM_THREADS
-        value: "1"
-      - key: HF_HOME
-        value: /opt/render/project/.cache/huggingface
       - key: CARGO_HOME
         value: /opt/render/project/.cargo
-      - key: PYTHONUNBUFFERED
-        value: "1"
