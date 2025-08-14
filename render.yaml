@@ -3,6 +3,43 @@ services:
     name: summarizer-api
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    region: singapore
+    branch: main
     autoDeploy: true
+    healthCheckPath: /healthz
+
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+
+    startCommand: >
+      gunicorn app:app
+      --bind 0.0.0.0:$PORT
+      --workers=1
+      --threads=2
+      --timeout=120
+      --graceful-timeout=30
+      --log-level=info
+
+    postDeployCommand: |
+      if [ -n "$RENDER_EXTERNAL_URL" ]; then
+        curl -fsS "$RENDER_EXTERNAL_URL/healthz" || true
+      fi
+
+    envVars:
+      - key: MODEL_ID
+        value: t5-small
+      - key: MAX_INPUT_CHARS
+        value: "1000"
+      - key: MAX_SUMMARY_CHARS
+        value: "140"
+      - key: TOKENIZERS_PARALLELISM
+        value: "false"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
+      - key: HF_HOME
+        value: /opt/render/project/.cache/huggingface
+      - key: PYTHONUNBUFFERED
+        value: "1"
