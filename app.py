@@ -4,8 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# Hugging Faceパイプラインをlazy-loadでメモリ節約
-summarizer = None
+summarizer = None  # lazy-loadで初回リクエスト時ロード
 
 @app.route("/summarize", methods=["POST"])
 def summarize():
@@ -14,7 +13,7 @@ def summarize():
         summarizer = pipeline(
             "summarization",
             model="facebook/bart-large-cnn",
-            device=-1   # CPU固定
+            device=-1  # CPU使用
         )
 
     data = request.get_json()
