@@ -21,11 +21,6 @@ services:
       --graceful-timeout=30
       --log-level=info
 
-    postDeployCommand: |
-      if [ -n "$RENDER_EXTERNAL_URL" ]; then
-        curl -fsS "$RENDER_EXTERNAL_URL/healthz" || true
-      fi
-
     envVars:
       - key: MODEL_ID
         value: t5-small
@@ -41,5 +36,7 @@ services:
         value: "1"
       - key: HF_HOME
         value: /opt/render/project/.cache/huggingface
+      - key: CARGO_HOME
+        value: /opt/render/project/.cargo
       - key: PYTHONUNBUFFERED
         value: "1"
