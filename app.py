@@ -46,10 +46,10 @@ def summarize():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/", methods=["GET"])
+@app.route("/health", methods=["GET"])
 def health_check():
-    """動作確認用の簡易エンドポイント"""
-    return jsonify({"status": "ok"}), 200
+    """Render のヘルスチェック用エンドポイント"""
+    return "OK", 200
 
 
 if __name__ == "__main__":
