@@ -1,10 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
-echo "📦 Installing Python dependencies with --prefer-binary..."
-
+echo "🚀 Upgrading pip/setuptools/wheel..."
 pip install --upgrade pip setuptools wheel
-pip install --prefer-binary tokenizers==0.19.1
-pip install --prefer-binary -r requirements.txt
 
-echo "✅ Installation complete."
+echo "📦 Installing tokenizers wheel first..."
+pip install --prefer-binary tokenizers==0.19.1
+
+echo "📦 Installing remaining dependencies..."
+pip install --prefer-binary -r requirements.txt
