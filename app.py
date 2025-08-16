@@ -5,11 +5,11 @@ import torch
 
 MODEL_NAME = os.getenv("MODEL_NAME", "facebook/bart-large-cnn")
 MAX_TOKENS = 512
-CHUNK_SIZE = 400  # マージン付き（MAX_TOKENS未満）
+CHUNK_SIZE = 400  # マージンあり（MAX_TOKENS未満）
 
 app = Flask(__name__)
 
-# モデル＆トークナイザー読み込み（CPU想定）
+# モデル & トークナイザーをロード（CPU向け）
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
