@@ -1,17 +1,12 @@
 services:
   - type: web
-    name: summarizer-service
+    name: summarizer-api
     env: python
     plan: free
-    buildCommand: pip install --no-cache-dir -r requirements.txt
-    startCommand: gunicorn app:app --workers=${GUNICORN_WORKERS:-1} --threads=${GUNICORN_THREADS:-1} --timeout=120
+    buildCommand: |
+      pip install --upgrade pip setuptools wheel
+      pip install --prefer-binary --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+    startCommand: gunicorn app:app --workers=1 --timeout=120
     envVars:
-      - key: MAX_INPUT_TOKENS
-        value: "512"
-      - key: GUNICORN_WORKERS
-        value: "1"
-      - key: GUNICORN_THREADS
-        value: "1"
       - key: PYTHONUNBUFFERED
         value: "1"
-    healthCheckPath: /health
