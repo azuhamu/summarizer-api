@@ -1,4 +1,4 @@
-fflask==3.0.3
+flask==3.0.3
 gunicorn==21.2.0
 torch==2.8.0
 transformers==4.44.2
@@ -6,3 +6,4 @@ huggingface_hub==0.25.1
 tokenizers==0.20.3
 numpy==1.26.4
 psutil==6.0.0
+
