@@ -1,6 +1,8 @@
-flask==3.0.3
+fflask==3.0.3
 gunicorn==21.2.0
-transformers==4.38.2
-torch==2.2.2
-sentencepiece==0.1.99
-sacremoses==0.1.1
+torch==2.8.0
+transformers==4.44.2
+huggingface_hub==0.25.1
+tokenizers==0.20.3
+numpy==1.26.4
+psutil==6.0.0
