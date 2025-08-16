@@ -4,6 +4,8 @@ services:
     env: python
     pythonVersion: 3.10
     plan: free
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+    startCommand: gunicorn app:app --timeout 180 --workers 1 --threads 1 --bind 0.0.0.0:$PORT
     buildCommand: |
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
@@ -11,3 +13,4 @@ services:
     envVars:
       - key: MODEL_NAME
         value: sshleifer/distilbart-cnn-12-6
+
