@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     autoDeploy: true
-    # 任意でリージョン指定
+    # 任意: リージョン指定
     # region: oregon
 
     buildCommand: |
@@ -25,13 +25,19 @@ services:
       - key: API_KEY
         sync: false  # Render ダッシュボードから設定
 
+      # Gunicorn設定（低リソース安定運用）
       - key: GUNICORN_WORKERS
-        value: "2"
+        value: "1"
       - key: GUNICORN_THREADS
-        value: "2"
+        value: "1"
       - key: GUNICORN_TIMEOUT
         value: "120"
 
+      # トークン制限
+      - key: MAX_INPUT_TOKENS
+        value: "512"
+
+      # Transformers並列設定
       - key: OMP_NUM_THREADS
         value: "1"
       - key: TOKENIZERS_PARALLELISM
