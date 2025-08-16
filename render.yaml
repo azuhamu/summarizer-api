@@ -6,4 +6,4 @@ services:
     startCommand: gunicorn app:app --timeout 120 --workers 1 --threads 1 --preload
     envVars:
       - key: MODEL_NAME
-        value: facebook/bart-large-cnn
+        value: sshleifer/distilbart-cnn-12-6
