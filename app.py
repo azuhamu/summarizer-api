@@ -5,7 +5,7 @@ import torch
 
 MODEL_NAME = os.getenv("MODEL_NAME", "sshleifer/distilbart-cnn-12-6")
 MAX_TOKENS = 512
-CHUNK_SIZE = 256  # Render無料枠のCPUメモリ対策
+CHUNK_SIZE = 200  # 無料枠CPUでも安全なトークン数
 
 app = Flask(__name__)
 
