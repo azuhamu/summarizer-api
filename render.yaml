@@ -3,29 +3,36 @@ services:
     name: summarization-api
     env: python
     plan: free
+    autoDeploy: true
+    # 任意でリージョン指定
+    # region: oregon
+
     buildCommand: |
-      rm -rf /opt/render/project/.cargo
       pip install --upgrade pip setuptools wheel
-      pip install --prefer-binary -r requirements.txt
+      pip install --prefer-binary --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+
     startCommand: >
       gunicorn app:app
       --bind 0.0.0.0:$PORT
-      --workers=${GUNICORN_WORKERS:-2}
-      --threads=${GUNICORN_THREADS:-2}
-      --timeout=${GUNICORN_TIMEOUT:-120}
+      --workers=$GUNICORN_WORKERS
+      --threads=$GUNICORN_THREADS
+      --timeout=$GUNICORN_TIMEOUT
       --worker-class=gevent
+
+    healthCheckPath: /health
+
     envVars:
-      - key: CARGO_HOME
-        value: /opt/render/project/.cargo
+      - key: API_KEY
+        sync: false  # Render ダッシュボードから設定
 
-      # 最大トークン長（Flask側で読み取り、入力カットに使う）
-      - key: MAX_TOKENS
-        value: "512"
-
-      # Gunicorn調整値（Renderのダッシュボードからも変更可能）
-      - key: GUNICORN_TIMEOUT
-        value: "120"
       - key: GUNICORN_WORKERS
         value: "2"
       - key: GUNICORN_THREADS
         value: "2"
+      - key: GUNICORN_TIMEOUT
+        value: "120"
+
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: TOKENIZERS_PARALLELISM
+        value: "false"
