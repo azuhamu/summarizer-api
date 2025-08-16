@@ -1,68 +1,54 @@
+import os
 from flask import Flask, request, jsonify
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
+
+MODEL_NAME = os.getenv("MODEL_NAME", "facebook/bart-large-cnn")
+MAX_TOKENS = 512
+CHUNK_SIZE = 400  # マージン付き（MAX_TOKENS未満）
 
 app = Flask(__name__)
 
-# 軽量モデルでメモリ使用量削減
-summarizer = pipeline(
-    "summarization",
-    model="sshleifer/distilbart-cnn-12-6",
-    tokenizer="sshleifer/distilbart-cnn-12-6",
-    device=-1  # CPUのみ
-)
+# モデル＆トークナイザー読み込み（CPU想定）
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
-MAX_TOKENS = 512
-CHUNK_SIZE = 500
-
-def chunk_text(text, max_tokens=CHUNK_SIZE):
-    tokens = summarizer.tokenizer.tokenize(text)
-    for i in range(0, len(tokens), max_tokens):
-        yield summarizer.tokenizer.convert_tokens_to_string(tokens[i:i + max_tokens])
-
-@app.route("/", methods=["GET"])
-def root():
-    return jsonify({"status": "ok", "message": "Summarizer API running"})
+def split_into_chunks(text):
+    tokens = tokenizer.encode(text)
+    return [tokenizer.decode(tokens[i:i+CHUNK_SIZE]) for i in range(0, len(tokens), CHUNK_SIZE)]
 
 @app.route("/summarize", methods=["POST"])
 def summarize():
-    data = request.get_json(silent=True)
-    if not data or "text" not in data:
-        return jsonify({"error": "Missing 'text' field"}), 400
+    data = request.get_json()
+    text = data.get("text", "")
 
-    text = data["text"].strip()
-    if not text:
-        return jsonify({"error": "Empty text"}), 400
+    if not text.strip():
+        return jsonify({"error": "No text provided"}), 400
 
-    try:
-        chunks = list(chunk_text(text))
-        partial_summaries = []
+    chunks = split_into_chunks(text)
+    summaries = []
 
-        for chunk in chunks:
-            summary = summarizer(
-                chunk,
-                max_length=128,
-                min_length=30,
-                truncation=True
-            )[0]["summary_text"]
-            partial_summaries.append(summary)
+    for chunk in chunks:
+        inputs = tokenizer(
+            chunk,
+            max_length=MAX_TOKENS,
+            truncation=True,
+            return_tensors="pt"
+        )
 
-        if len(partial_summaries) > 1:
-            final_input = " ".join(partial_summaries)
-            final_summary = summarizer(
-                final_input,
-                max_length=128,
-                min_length=30,
-                truncation=True
-            )[0]["summary_text"]
-        else:
-            final_summary = partial_summaries[0]
+        with torch.no_grad():
+            output = model.generate(
+                **inputs,
+                max_length=MAX_TOKENS
+            )
+        summaries.append(tokenizer.decode(output[0], skip_special_tokens=True))
 
-        return jsonify({
-            "summary": final_summary,
-            "chunks_processed": len(chunks)
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    final_summary = " ".join(summaries)
+    return jsonify({"summary": final_summary})
+
+@app.route("/", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
