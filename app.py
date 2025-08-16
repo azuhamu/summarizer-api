@@ -5,13 +5,12 @@ import torch
 
 MODEL_NAME = os.getenv("MODEL_NAME", "sshleifer/distilbart-cnn-12-6")
 MAX_TOKENS = 512
-CHUNK_SIZE = 200  # 無料枠CPUでも安全なトークン数
+CHUNK_SIZE = 150  # 安全優先
 
 app = Flask(__name__)
 
-device_map = "auto"
 kwargs = {
-    "device_map": device_map,
+    "device_map": "auto",
     "low_cpu_mem_usage": True,
     "torch_dtype": torch.float16
 }
