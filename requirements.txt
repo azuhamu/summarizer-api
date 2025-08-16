@@ -1,5 +1,14 @@
+--prefer-binary
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+pip>=25.2
+setuptools>=75.1.0
+wheel
+
 flask==3.0.3
 gunicorn==21.2.0
 transformers==4.44.0
-tokenizers==0.19.1
-torch>=2.0.0
+tokenizers==0.15.2   # Rust不要の安定版
+torch==2.5.1+cpu
+huggingface-hub==0.23.4
+safetensors==0.4.2
