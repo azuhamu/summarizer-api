@@ -1,44 +1,17 @@
 services:
   - type: web
-    name: summarization-api
+    name: summarizer-service
     env: python
     plan: free
-    autoDeploy: true
-    # 任意: リージョン指定
-    # region: oregon
-
-    buildCommand: |
-      pip install --upgrade pip setuptools wheel
-      pip install --prefer-binary --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
-
-    startCommand: >
-      gunicorn app:app
-      --bind 0.0.0.0:$PORT
-      --workers=$GUNICORN_WORKERS
-      --threads=$GUNICORN_THREADS
-      --timeout=$GUNICORN_TIMEOUT
-      --worker-class=gevent
-
-    healthCheckPath: /health
-
+    buildCommand: pip install --no-cache-dir -r requirements.txt
+    startCommand: gunicorn app:app --workers=${GUNICORN_WORKERS:-1} --threads=${GUNICORN_THREADS:-1} --timeout=120
     envVars:
-      - key: API_KEY
-        sync: false  # Render ダッシュボードから設定
-
-      # Gunicorn設定（低リソース安定運用）
+      - key: MAX_INPUT_TOKENS
+        value: "512"
       - key: GUNICORN_WORKERS
         value: "1"
       - key: GUNICORN_THREADS
         value: "1"
-      - key: GUNICORN_TIMEOUT
-        value: "120"
-
-      # トークン制限
-      - key: MAX_INPUT_TOKENS
-        value: "512"
-
-      # Transformers並列設定
-      - key: OMP_NUM_THREADS
+      - key: PYTHONUNBUFFERED
         value: "1"
-      - key: TOKENIZERS_PARALLELISM
-        value: "false"
+    healthCheckPath: /health
