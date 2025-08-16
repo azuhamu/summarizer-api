@@ -8,7 +8,7 @@ wheel
 flask==3.0.3
 gunicorn==21.2.0
 transformers==4.44.0
-tokenizers==0.15.2   # Rust不要の安定版
+tokenizers==0.15.2
 torch==2.5.1+cpu
 huggingface-hub==0.23.4
 safetensors==0.4.2
