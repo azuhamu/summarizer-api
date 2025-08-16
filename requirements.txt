@@ -12,3 +12,4 @@ tokenizers==0.19.1
 torch==2.5.1+cpu
 huggingface-hub==0.23.4
 safetensors==0.4.2
+bitsandbytes==0.43.1
