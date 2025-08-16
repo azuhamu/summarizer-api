@@ -7,7 +7,26 @@ services:
       rm -rf /opt/render/project/.cargo
       pip install --upgrade pip setuptools wheel
       pip install --prefer-binary -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers=2 --threads=4
+    # Gunicornのタイムアウト・ワーカー数・スレッド数を調整
+    startCommand: >
+      gunicorn app:app
+      --bind 0.0.0.0:$PORT
+      --workers=2
+      --threads=2
+      --timeout=120         # 30秒 → 120秒へ延長
+      --worker-class=gevent # 長いI/O待ちにも強くする（必要な場合）
     envVars:
       - key: CARGO_HOME
         value: /opt/render/project/.cargo
+      # 最大トークン長をアプリ側で参照して制限する
+      - key: MAX_TOKENS
+        value: "512"
+      # Gunicornのtimeoutやworkersも環境変数化すると調整が楽
+      - key: GUNICORN_TIMEOUT
+        value: "120"
+      - key: GUNICORN_WORKERS
+        value: "2"
+      - key: GUNICORN_THREADS
+        value: "2"
+
+
