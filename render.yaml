@@ -2,7 +2,7 @@ services:
   - type: web
     name: summarizer-api
     env: python
-    pythonVersion: "3.10"   # ← ダブルクォーテーションで囲む
+    pythonVersion: "3.11.11"
     plan: free
     buildCommand: |
       pip install --upgrade pip setuptools wheel
@@ -11,4 +11,3 @@ services:
     envVars:
       - key: MODEL_NAME
         value: sshleifer/distilbart-cnn-12-6
-
