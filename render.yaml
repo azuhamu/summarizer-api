@@ -2,10 +2,9 @@ services:
   - type: web
     name: summarizer-api
     env: python
-    plan: free
-    region: singapore  # 変更可: singapore / oregon / frankfurt 等
-    buildCommand: bash install.sh
+    plan: starter
+    buildCommand: ./install.sh
     startCommand: gunicorn app:app --workers=1 --threads=8 --timeout=0
     envVars:
       - key: PYTHON_VERSION
-        value: 3.13.4
+        value: 3.13.0
