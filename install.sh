@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
 
-echo "🚀 Upgrading pip/setuptools/wheel..."
-pip install --upgrade pip setuptools wheel
+echo "🔄 Upgrading pip..."
+pip install --upgrade pip
 
-echo "📦 Installing tokenizers wheel first..."
-pip install --prefer-binary tokenizers==0.19.1
+echo "📦 Installing wheel-enabled tokenizers..."
+pip install --only-binary=:all: tokenizers==0.20.1
 
-echo "📦 Installing remaining dependencies..."
-pip install --prefer-binary -r requirements.txt
+echo "📦 Installing remaining requirements..."
+pip install -r requirements.txt
