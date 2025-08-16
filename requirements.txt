@@ -1,6 +1,8 @@
-tokenizers==0.19.1
-transformers==4.41.0
-torch==2.8.0
-flask==3.0.3
-gunicorn==22.0.0
-sentencepiece==0.1.99
+# pipは最新化するのでここではバージョン指定なし
+tokenizers==0.20.1        # Python 3.9〜3.13 用 manylinux wheel 有り
+transformers==4.44.2      # tokenizers 0.20.x と互換
+torch>=2.3.0              # PyTorch。Renderの環境に合わせてwheel取得
+flask>=3.0.0              # APIサーバ用
+gunicorn>=21.2.0          # プロダクションWSGIサーバ
+# 以下は必要に応じて
+numpy>=1.26.0
