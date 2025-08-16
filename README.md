@@ -1,2 +1,3 @@
-# summarizer-api
-ブログ過去記事エックス投稿用
+# API Deployment on Render (Python 3.13.4)
+
+## 1. ZIP 化
