@@ -7,11 +7,10 @@ echo "🔄 Upgrading pip..."
 pip install --upgrade pip
 
 echo "📦 Installing wheel-enabled tokenizers..."
-pip install --only-binary=:all: tokenizers==0.21.2
+pip install --only-binary=:all: tokenizers==0.20.3
 
 echo "📦 Installing remaining requirements..."
-pip install -r requirements.txt
+pip install --only-binary=:all: -r requirements.txt
 
 echo "🔍 Checking dependency conflicts..."
-# エラー終了させずに衝突を表示
-pip check || echo "⚠️ pip check found potential dependency conflicts"
+pip check || echo "⚠️ pip check found potential dependency conflicts (non-blocking)"
