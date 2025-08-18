@@ -1,7 +1,10 @@
 pip>=24.0
-tokenizers==0.20.3      # Transformers 4.46.3互換
+tokenizers==0.20.3
 transformers==4.46.3
-torch>=2.4.0
-flask>=3.0.0
-gunicorn>=21.2.0
-numpy>=1.26.0
+torch==2.3.0          # 安定版に固定
+flask==3.0.0
+gunicorn==21.2.0
+numpy==1.26.0
+requests==2.31.0
+requests-oauthlib==1.3.1
+beautifulsoup4==4.12.2  # HTML除去用
