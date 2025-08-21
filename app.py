@@ -1,56 +1,83 @@
 from flask import Flask, request, jsonify
-from post_to_x import post_to_x
+from transformers import pipeline, set_seed
+import torch
 
 app = Flask(__name__)
 
-# サーバーが正常に起動しているかを確認するためのエンドポイント
+# --- AIモデルの準備 ---
+# AIモデルをロードします。サービスの起動時に一度だけ実行されるので少し時間がかかります。
+# device=0 はGPUを使う設定ですが、Renderの無料プランではCPU(-1)になります。
+# torch_dtypeで半精度浮動小数点数を使うと、メモリ使用量と速度が改善します。
+try:
+    generator = pipeline(
+        'text-generation',
+        model='rinna/japanese-gpt2-medium',
+        device=-1, # CPUを使用
+        torch_dtype=torch.float16
+    )
+    print("✅ AI Model loaded successfully.")
+except Exception as e:
+    print(f"❌ Failed to load AI model: {e}")
+    generator = None
+
 @app.route("/")
 def health():
-    return {"status": "ok"}
+    # APIが生きているか、モデルがロードできたかを確認できる
+    status = "ok" if generator else "error: model not loaded"
+    return {"status": status}
 
-# PHPから呼び出され、投稿文を生成してTwitterに投稿するエンドポイント
-@app.route("/tweet", methods=["GET"]) # PHPからのGETリクエストを受け付ける
-def tweet():
-    # --- STEP 1: PHPから送られてくるURLパラメータを取得 ---
-    # request.args.get() を使って、URLの ? 以降のパラメータを取得します
+# 文章生成のエンドポイント（PHPから呼び出される）
+@app.route("/generate", methods=["GET"])
+def generate_text():
+    if not generator:
+        return jsonify({"error": "AI model is not available"}), 503
+
+    # PHPから送られてくるパラメータを取得
     title = request.args.get("title", "").strip()
-    link = request.args.get("link", "").strip()
-    
-    # excerpt は現在使用していませんが、将来的に要約機能などで利用可能です
-    # excerpt = request.args.get("excerpt", "").strip()
+    excerpt = request.args.get("excerpt", "").strip()
 
-    # --- STEP 2: 必要なパラメータが揃っているかチェック ---
-    if not title or not link:
-        # title と link は必須なので、どちらかが欠けていればエラーを返す
-        return jsonify({"error": "title and link are required parameters"}), 400
+    if not title:
+        return jsonify({"error": "title is a required parameter"}), 400
 
-    # --- STEP 3: Twitterに投稿する本文を生成 ---
-    # ここで投稿文のフォーマットを自由に定義できます。
-    # 例: 「【記事のタイトル】\n\n【記事のURL】」
-    post_text = f"{title}\n\n{link}"
+    # --- AIへの指示（プロンプト）を作成 ---
+    # このプロンプトの書き方で、生成される文章の質が大きく変わります。
+    prompt = f"""
+以下のブログ記事のタイトルと抜粋を元に、読者の興味を引くような魅力的なツイートを作成してください。
+
+# 記事タイトル:
+{title}
+
+# 記事の抜粋:
+{excerpt}
+
+# 生成ツイート:
+"""
 
     try:
-        # --- STEP 4: 生成した投稿文をTwitterに投稿 ---
-        # post_to_x.py の関数を呼び出し、実際にツイート処理を行います
-        result = post_to_x(post_text)
+        # AIで文章を生成
+        set_seed(torch.randint(0, 10000, (1,)).item()) # 毎回違う結果にするための乱数シード
+        generated_outputs = generator(
+            prompt,
+            max_length=150, # 生成する最大長 (プロンプト含む)
+            num_return_sequences=1,
+            do_sample=True,
+            top_k=50,
+            top_p=0.95,
+            temperature=0.9,
+            no_repeat_ngram_size=2 # 同じフレーズの繰り返しを防ぐ
+        )
+        
+        # 生成されたテキストだけを抽出
+        generated_text = generated_outputs[0]['generated_text']
+        # プロンプト部分を削除して、生成されたツイート部分だけを取り出す
+        tweet_text = generated_text.split("# 生成ツイート:")[1].strip()
 
-        # --- STEP 5: 処理結果をPHPに返す ---
-        # Twitterへの投稿が成功したかどうかをチェック
-        if result.get("status") == "success":
-            # 成功した場合、PHP側がログ出力などで使えるように'text'キーを含んだJSONを返す
-            return jsonify({
-                "status": "success",
-                "text": post_text,  # PHPが受け取るための生成済み投稿文
-                "tweet_response": result.get("tweet") # Twitterからの詳細な応答
-            })
-        else:
-            # post_to_x内でエラーが発生した場合（認証情報エラーなど）
-            return jsonify(result), 500
+        # PHPに生成した文章を返す
+        return jsonify({"generated_text": tweet_text})
 
     except Exception as e:
-        # 予期せぬエラーが発生した場合
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"AI generation failed: {str(e)}"}), 500
 
-# サーバーを起動するための記述
+# サーバー起動
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
