@@ -4,7 +4,9 @@ services:
     env: python
     plan: starter
     buildCommand: ./install.sh
-    startCommand: gunicorn app:app --workers=1 --threads=8 --timeout=0
+    # ▼▼▼ この行を修正 ▼▼▼
+    startCommand: gunicorn app:app --workers=1 --threads=4 --timeout=0
+    # ▲▲▲ この行を修正 ▲▲▲
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.0
